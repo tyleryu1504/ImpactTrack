@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Compost & Cleanup Tracker</title>
+
+  <link rel="stylesheet" href="main.min.css" />
+  <link rel="stylesheet" href="auth.min.css" />
+
+  <!-- Initialize Firebase & Auth -->
+  <script type="module" src="./firebase-init.js"></script>
+  <script type="module" src="./auth-common.js"></script>
+
+  <!-- Page script -->
+  <script type="module" src="script.js" defer></script>
+</head>
+<body id="vanta-bg">
+
+  <!-- Universal Auth Section -->
+  <div id="auth-section">
+    <h2>Login / Signup</h2>
+    <button id="google-btn">Continue with Google</button>
+    <div class="divider"><span>or</span></div>
+    <input type="email"    id="email"            placeholder="Email" />
+    <input type="password" id="password"         placeholder="Password" />
+    <input type="password" id="password-confirm" placeholder="Confirm Password" style="display:none;" />
+    <input type="text"     id="username"         placeholder="Username" style="display:none;" />
+    <button id="login-btn">Login</button>
+    <button id="signup-btn">Sign Up</button>
+    <div id="auth-msg"></div>
+  </div>
+
+  <!-- App content (hidden until login) -->
+  <div id="app-section" style="display:none;">
+    <h1>Compost & Cleanup Tracker</h1>
+
+    <!-- Navigation -->
+    <nav id="main-nav">
+      <a href="index.html" class="nav-link active">Activity Tracker</a>
+      <a href="blog.html" class="nav-link">Community Blog</a>
+      <a href="inbox.html" class="nav-link">Inbox</a>
+      <a href="user-dashboard.html" class="nav-link">User Dashboard</a>
+      <a href="global-dashboard.html" class="nav-link">Global Dashboard</a>
+    </nav>
+
+    <!-- Follow / Block -->
+    <div id="follow-section">
+      <h2>Find Users</h2>
+      <input type="text" id="follow-username" placeholder="Search username" />
+      <button id="follow-btn">Follow</button>
+      <button id="block-btn">Block</button>
+      <div id="follow-msg"></div>
+      <div id="block-msg"></div>
+    </div>
+
+    <!-- Log an Activity -->
+    <h2>Log an Activity</h2>
+    <form id="log-form">
+      <select id="activity-type">
+        <option value="compost">Compost</option>
+        <option value="cleanup">Cleanup</option>
+      </select>
+      <select id="unit">
+        <option value="kg">Kilograms (kg)</option>
+        <option value="minutes">Minutes</option>
+      </select>
+      <input type="number" id="amount" placeholder="Amount" required step="0.1" min="0.1" />
+      <input type="text" id="notes" placeholder="Notes (optional)" />
+
+      <div class="image-upload-section">
+        <label for="log-image">Add Image (optional):</label>
+        <input type="file" id="log-image" accept="image/*" />
+        <div id="image-preview"></div>
+        <small style="color: rgba(255,255,255,0.8);">Photo required for logs over 10kg or 30 minutes</small>
+      </div>
+
+      <button type="submit">Submit</button>
+    </form>
+
+    <!-- Recent Activity -->
+    <h2>Recent Activity</h2>
+    <ul id="logs-list"></ul>
+
+    <!-- Logout -->
+    <div class="logout-section">
+      <button id="logout-btn">Logout</button>
+    </div>
+  </div>
+
+</body>
+</html>
