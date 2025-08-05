@@ -1,12 +1,12 @@
-import { auth } from './firebase.js';
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from './firebase-init.js';
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 import { listenToChats, listenToMessages, sendMessage } from './firestore/chats.js';
 import { searchUsers } from './firestore/users.js';
 
 let currentChatId = null;
 
 onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href = 'login.html';
+  if (!user) window.location.href = 'index.html';
 });
 
 document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
@@ -47,7 +47,7 @@ document.getElementById('sendBtn').addEventListener('click', async () => {
 document.getElementById('searchBar').addEventListener('keypress', async (e) => {
   if (e.key === 'Enter') {
     const results = await searchUsers(e.target.value);
-    if (results.length) window.location.href = `profile.html?uid=${results[0].id}`;
+    if (results.length) window.location.href = `profile.html?uid=${results[0].uid}`;
     else alert('No users found.');
   }
 });
