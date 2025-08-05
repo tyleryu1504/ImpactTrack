@@ -1,61 +1,51 @@
-import { auth, db } from './firebase.js';
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { logActivity, likeActivity, getActivityFeed } from './firestore/activities.js';
-import { getGlobalStats } from './firestore/stats.js';
-import { searchUsers } from './firestore/users.js';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | Climate Tracker</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <input type="text" id="searchBar" placeholder="Search users..." />
+    <div>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="inbox.html">Inbox</a>
+      <a href="profile.html">Profile</a>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </nav>
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) window.location.href = 'login.html';
-});
+  <main>
+    <section>
+      <h2>Log New Activity</h2>
+      <form id="activityForm">
+        <select id="activityType" required>
+          <option value="compost">Compost</option>
+          <option value="cleanup">Cleanup</option>
+        </select>
+        <input type="number" id="activityAmount" placeholder="Amount" required />
+        <select id="activityUnit" required>
+          <option value="kg">kg</option>
+          <option value="minutes">minutes</option>
+        </select>
+        <input type="text" id="activityNote" placeholder="Note (optional)" />
+        <button type="submit">Add Activity</button>
+      </form>
+    </section>
 
-document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+    <section>
+      <h2>Global Stats</h2>
+      <div id="globalStats"></div>
+    </section>
 
-// Activity form submission
-document.getElementById('activityForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  await logActivity(activityType.value, parseFloat(activityAmount.value), activityUnit.value, activityNote.value);
-  activityForm.reset();
-  loadFeed();
-  loadStats();
-});
+    <section>
+      <h2>Activity Feed</h2>
+      <div id="activityFeed"></div>
+    </section>
+  </main>
 
-// Load global stats
-async function loadStats() {
-  const stats = await getGlobalStats();
-  document.getElementById('globalStats').innerHTML = `
-    <p>Total Compost: ${stats.totalCompostKg} kg</p>
-    <p>Total Cleanup: ${stats.totalCleanupMins} minutes</p>
-    <p>Users: ${stats.userCount}</p>
-  `;
-}
-
-// Load feed
-async function loadFeed() {
-  const feed = await getActivityFeed();
-  const container = document.getElementById('activityFeed');
-  container.innerHTML = '';
-  feed.forEach((item) => {
-    const div = document.createElement('div');
-    div.innerHTML = `
-      <b>${item.username}</b> logged ${item.amount} ${item.unit} of ${item.type}. 
-      <i>${item.note || ''}</i>
-      <button data-id="${item.id}" class="likeBtn">❤️ ${item.likesCount}</button>
-    `;
-    container.appendChild(div);
-  });
-  document.querySelectorAll('.likeBtn').forEach(btn => 
-    btn.addEventListener('click', () => likeActivity(btn.dataset.id))
-  );
-}
-
-loadFeed();
-loadStats();
-
-// Search users
-document.getElementById('searchBar').addEventListener('keypress', async (e) => {
-  if (e.key === 'Enter') {
-    const results = await searchUsers(e.target.value);
-    if (results.length) window.location.href = `profile.html?uid=${results[0].id}`;
-    else alert('No users found.');
-  }
-});
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>
