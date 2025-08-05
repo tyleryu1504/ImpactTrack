@@ -1,4 +1,4 @@
-import { db, auth } from '../firebase';
+import { db, auth } from '../firebase-init.js';
 import {
   setDoc,
   addDoc,
@@ -10,7 +10,7 @@ import {
   doc,
   getDoc,
   serverTimestamp
-} from 'firebase/firestore';
+} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
 export async function createUser(uid, data) {
   const userRef = doc(db, 'users', uid);
@@ -28,6 +28,8 @@ export async function createUser(uid, data) {
 }
 
 export async function blockUser(blockedUid) {
+  if (!auth.currentUser) throw new Error('No authenticated user');
+  
   const blocksCol = collection(db, 'users', auth.currentUser.uid, 'blocks');
   await addDoc(blocksCol, {
     blockedUid,
@@ -36,6 +38,8 @@ export async function blockUser(blockedUid) {
 }
 
 export async function unblockUser(blockedUid) {
+  if (!auth.currentUser) throw new Error('No authenticated user');
+  
   const blocksCol = collection(db, 'users', auth.currentUser.uid, 'blocks');
   const q = query(blocksCol, where('blockedUid', '==', blockedUid));
   const snapshot = await getDocs(q);
@@ -44,7 +48,9 @@ export async function unblockUser(blockedUid) {
 }
 
 export async function searchUsers(term) {
-  const lower = term.toLowerCase();
+  if (!term || term.trim().length === 0) return [];
+  
+  const lower = term.toLowerCase().trim();
   const usersCol = collection(db, 'users');
   const q = query(
     usersCol,
@@ -60,4 +66,3 @@ export async function getUser(uid) {
   const snap = await getDoc(ref);
   return snap.exists() ? { uid: snap.id, ...snap.data() } : null;
 }
-
