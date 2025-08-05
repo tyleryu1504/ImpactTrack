@@ -1,4 +1,4 @@
-import { getAuth } from 'firebase/auth';
+import { auth, db } from '../firebase-init.js';
 import {
   addDoc,
   collection,
@@ -9,10 +9,7 @@ import {
   updateDoc,
   doc,
   serverTimestamp,
-} from 'firebase/firestore';
-import { db } from '../firebase';
-
-const auth = getAuth();
+} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
 export async function createChat(participants, isGroup = false, groupName = '') {
   const chatData = {
@@ -39,7 +36,7 @@ export async function sendMessage(chatId, formattedText) {
 
   await addDoc(collection(db, 'chats', chatId, 'messages'), {
     senderId: user.uid,
-    senderName: user.displayName || '',
+    senderName: user.displayName || user.email || 'Unknown User',
     text,
     formattedText,
     createdAt: serverTimestamp(),
@@ -47,7 +44,7 @@ export async function sendMessage(chatId, formattedText) {
 
   await updateDoc(doc(db, 'chats', chatId), {
     lastMessage: text,
-    lastMessageSender: user.displayName || '',
+    lastMessageSender: user.displayName || user.email || 'Unknown User',
     updatedAt: serverTimestamp(),
   });
 }
