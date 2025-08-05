@@ -1,1 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Login | ImpactTrack</title>
 
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Initialize Firebase & Auth -->
+  <script type="module" src="./firebase-init.js"></script>
+  <script type="module" src="./auth-common.js"></script>
+
+  <!-- Page-specific script -->
+  <script type="module" src="login.js" defer></script>
+</head>
+<body>
+
+  <!-- Universal Auth Section -->
+  <div id="auth-section">
+    <h2>Login / Signup</h2>
+    <button id="google-btn">Continue with Google</button>
+    <div class="divider"><span>or</span></div>
+    <input type="email"    id="email"            placeholder="Email" />
+    <input type="password" id="password"         placeholder="Password" />
+    <input type="password" id="password-confirm" placeholder="Confirm Password" style="display:none;" />
+    <input type="text"     id="username"         placeholder="Username" style="display:none;" />
+    <button id="login-btn">Login</button>
+    <button id="signup-btn">Sign Up</button>
+    <div id="auth-msg"></div>
+  </div>
+
+  <!-- App content (hidden until login) -->
+  <div id="app-section" style="display:none;">
+    <!-- You may leave this empty in index.html -->
+  </div>
+
+</body>
+</html>
