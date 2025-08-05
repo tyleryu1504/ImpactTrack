@@ -4,12 +4,13 @@ import { getFirestore, serverTimestamp } from "firebase/firestore";
 
 // Placeholder Firebase configuration - replace with your project's config values
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyBBXlRU8GvhX6TiKA8Xr5odq5l-hEGmW7E",
+  authDomain: "impact-track.firebaseapp.com",
+  projectId: "impact-track",
+  storageBucket: "impact-track.firebasestorage.app",
+  messagingSenderId: "1052527193780",
+  appId: "1:1052527193780:web:e9af5b190ce97d85cc71e1",
+  measurementId: "G-ZQ3QZ8SHY7"
 };
 
 // Initialize Firebase
