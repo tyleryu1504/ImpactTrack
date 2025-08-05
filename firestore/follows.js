@@ -1,13 +1,19 @@
-import { addDoc, collection, query, where, getDocs, deleteDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-import { db } from '../firebase';
+import { auth, db } from '../firebase-init.js';
+import { 
+  addDoc, 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  deleteDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
 export const followUser = async (targetUid) => {
-  const auth = getAuth();
   const myUid = auth.currentUser?.uid;
   if (!myUid) throw new Error('No authenticated user');
 
-  const createdAt = new Date();
+  const createdAt = serverTimestamp();
 
   await addDoc(collection(db, 'users', myUid, 'following'), {
     followingUid: targetUid,
@@ -21,7 +27,6 @@ export const followUser = async (targetUid) => {
 };
 
 export const unfollowUser = async (targetUid) => {
-  const auth = getAuth();
   const myUid = auth.currentUser?.uid;
   if (!myUid) throw new Error('No authenticated user');
 
