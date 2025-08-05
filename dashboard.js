@@ -9,6 +9,7 @@ import {
   getDocs,
   doc,
   getDoc,
+  setDoc,
   updateDoc,
   increment
 } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
