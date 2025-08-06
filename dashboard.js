@@ -1,10 +1,11 @@
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
-import { collection, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+import { collection, collectionGroup, query, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
 const userStatsDiv = document.getElementById('user-stats');
 const globalStatsDiv = document.getElementById('global-stats');
 const logoutButton = document.getElementById('logout');
+const userEmailDisplay = document.getElementById('user-email');
 let currentUser;
 
 onAuthStateChanged(auth, (user) => {
@@ -12,6 +13,9 @@ onAuthStateChanged(auth, (user) => {
     window.location.href = 'login.html';
   } else {
     currentUser = user;
+    if (userEmailDisplay) {
+      userEmailDisplay.textContent = user.email;
+    }
     loadUserStats();
     loadGlobalStats();
   }
@@ -20,7 +24,7 @@ onAuthStateChanged(auth, (user) => {
 logoutButton.addEventListener('click', () => signOut(auth));
 
 function loadUserStats() {
-  const q = query(collection(db, 'activities'), where('userId', '==', currentUser.uid));
+  const q = query(collection(db, 'users', currentUser.uid, 'logs'));
   onSnapshot(q, (snapshot) => {
     const stats = { compostKg: 0, cleanupKg: 0, compostMinutes: 0, cleanupMinutes: 0 };
     snapshot.forEach((doc) => {
@@ -40,7 +44,7 @@ function loadUserStats() {
 }
 
 function loadGlobalStats() {
-  const q = query(collection(db, 'activities'));
+  const q = query(collectionGroup(db, 'logs'));
   onSnapshot(q, (snapshot) => {
     const stats = { compostKg: 0, cleanupKg: 0, compostMinutes: 0, cleanupMinutes: 0 };
     snapshot.forEach((doc) => {
