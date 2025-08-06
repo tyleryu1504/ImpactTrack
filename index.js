@@ -1,6 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
-import { collection, addDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+import { collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
 const activityForm = document.getElementById('activity-form');
 const activityFeed = document.getElementById('activity-feed');
@@ -37,7 +37,7 @@ activityForm.addEventListener('submit', async (e) => {
     createdAt: serverTimestamp()
   };
   try {
-    await addDoc(collection(db, 'activities'), data);
+    await addDoc(collection(db, 'users', currentUser.uid, 'logs'), data);
     activityForm.reset();
     minutesInput.parentElement.style.display = '';
     kgInput.parentElement.style.display = 'none';
@@ -52,11 +52,9 @@ logoutButton.addEventListener('click', () => {
 
 function loadFeed() {
   const q = query(
-    collection(db, 'activities'),
-    where('userId', '==', currentUser.uid),
+    collection(db, 'users', currentUser.uid, 'logs'),
     orderBy('createdAt', 'desc'),
-      limit(5)
-    );
+
   onSnapshot(q, (snapshot) => {
     activityFeed.innerHTML = '';
     snapshot.forEach((doc) => {
