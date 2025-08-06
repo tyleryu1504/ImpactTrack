@@ -5,6 +5,9 @@ import { collection, addDoc, query, where, orderBy, limit, onSnapshot, serverTim
 const activityForm = document.getElementById('activity-form');
 const activityFeed = document.getElementById('activity-feed');
 const logoutButton = document.getElementById('logout');
+const minutesInput = document.getElementById('minutes');
+const kgInput = document.getElementById('kg');
+const unitRadios = document.querySelectorAll('input[name="unit"]');
 
 let currentUser;
 
@@ -20,17 +23,20 @@ onAuthStateChanged(auth, (user) => {
 activityForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (!currentUser) return;
+  const unit = document.querySelector('input[name="unit"]:checked').value;
   const data = {
     userId: currentUser.uid,
     type: document.getElementById('activity-type').value,
-    minutes: Number(document.getElementById('minutes').value) || 0,
-    kg: Number(document.getElementById('kg').value) || 0,
+    minutes: unit === 'minutes' ? Number(minutesInput.value) || 0 : 0,
+    kg: unit === 'kg' ? Number(kgInput.value) || 0 : 0,
     notes: document.getElementById('notes').value,
     createdAt: serverTimestamp()
   };
   try {
     await addDoc(collection(db, 'activities'), data);
     activityForm.reset();
+    minutesInput.parentElement.style.display = '';
+    kgInput.parentElement.style.display = 'none';
   } catch (err) {
     alert(err.message);
   }
@@ -52,8 +58,23 @@ function loadFeed() {
     snapshot.forEach((doc) => {
       const data = doc.data();
       const li = document.createElement('li');
-      li.textContent = `${data.type} - ${data.minutes} min - ${data.kg} kg - ${data.notes}`;
+      const unitText = data.kg ? `${data.kg} kg` : `${data.minutes} min`;
+      li.textContent = `${data.type} - ${unitText} - ${data.notes}`;
       activityFeed.appendChild(li);
     });
   });
 }
+
+unitRadios.forEach((radio) => {
+  radio.addEventListener('change', () => {
+    if (radio.value === 'minutes') {
+      minutesInput.parentElement.style.display = '';
+      kgInput.parentElement.style.display = 'none';
+      kgInput.value = '';
+    } else {
+      kgInput.parentElement.style.display = '';
+      minutesInput.parentElement.style.display = 'none';
+      minutesInput.value = '';
+    }
+  });
+});
