@@ -54,8 +54,7 @@ function loadFeed() {
   const q = query(
     collection(db, 'users', currentUser.uid, 'logs'),
     orderBy('createdAt', 'desc'),
-    limit(5)
-  );
+
   onSnapshot(q, (snapshot) => {
     activityFeed.innerHTML = '';
     snapshot.forEach((doc) => {
