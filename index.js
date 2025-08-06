@@ -8,6 +8,7 @@ const logoutButton = document.getElementById('logout');
 const minutesInput = document.getElementById('minutes');
 const kgInput = document.getElementById('kg');
 const unitRadios = document.querySelectorAll('input[name="unit"]');
+const userEmailDisplay = document.getElementById('user-email');
 
 let currentUser;
 
@@ -16,6 +17,9 @@ onAuthStateChanged(auth, (user) => {
     window.location.href = 'login.html';
   } else {
     currentUser = user;
+    if (userEmailDisplay) {
+      userEmailDisplay.textContent = user.email;
+    }
     loadFeed();
   }
 });
@@ -51,8 +55,8 @@ function loadFeed() {
     collection(db, 'activities'),
     where('userId', '==', currentUser.uid),
     orderBy('createdAt', 'desc'),
-    limit(10)
-  );
+      limit(5)
+    );
   onSnapshot(q, (snapshot) => {
     activityFeed.innerHTML = '';
     snapshot.forEach((doc) => {
@@ -65,16 +69,17 @@ function loadFeed() {
   });
 }
 
-unitRadios.forEach((radio) => {
-  radio.addEventListener('change', () => {
-    if (radio.value === 'minutes') {
-      minutesInput.parentElement.style.display = '';
-      kgInput.parentElement.style.display = 'none';
-      kgInput.value = '';
-    } else {
-      kgInput.parentElement.style.display = '';
-      minutesInput.parentElement.style.display = 'none';
-      minutesInput.value = '';
-    }
+  unitRadios.forEach((radio) => {
+    radio.addEventListener('change', (e) => {
+      if (!e.target.checked) return;
+      if (e.target.value === 'minutes') {
+        minutesInput.parentElement.style.display = '';
+        kgInput.parentElement.style.display = 'none';
+        kgInput.value = '';
+      } else {
+        kgInput.parentElement.style.display = '';
+        minutesInput.parentElement.style.display = 'none';
+        minutesInput.value = '';
+      }
+    });
   });
-});
