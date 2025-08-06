@@ -1,0 +1,47 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(-45deg, #1e3c72, #2a5298, #3a7bd5, #83a4d4);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+form, #activity-feed, #user-stats, #global-stats {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 20px;
+  border-radius: 8px;
+  margin: 10px;
+}
+
+input, select, button {
+  margin: 5px 0;
+  padding: 8px;
+  border-radius: 4px;
+  border: none;
+}
+
+button {
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: #fff;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+h1, h2 {
+  text-shadow: 1px 1px 2px #000;
+}
