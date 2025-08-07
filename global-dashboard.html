@@ -2,40 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Global Dashboard</title>
+  <title>Global Stats – ImpactTrack</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body id="vanta-bg">
-  <header>
-    <input type="text" id="user-search" placeholder="Search users">
-    <div id="search-results"></div>
-    <div class="user-email" id="user-email"></div>
-  </header>
-  <main id="global-stats">
-    <h1>Global Stats</h1>
-    <p>Total composted: <span id="compost-total">0</span> kg</p>
-    <p>Total cleanup: <span id="cleanup-total">0</span> minutes</p>
-    <p>Total users: <span id="users-total">0</span></p>
-  </main>
+<body>
+
   <script type="module">
-    import { requireAuth, setupSearchBar } from './auth-common.js';
-    import { auth } from './firebase-init.js';
-    import { listenToGlobalStats } from './firestore/stats.js';
+    import { requireAuth, setupNav } from './auth-common.js';
+    import { db } from './firebase-init.js';
+    import { doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
     requireAuth();
-    setupSearchBar();
+    setupNav();
 
-    auth.onAuthStateChanged(user => {
-      if (user) document.getElementById('user-email').textContent = user.email;
-    });
+    // Listen to your global stats docs
+    const compostRef = doc(db, 'stats', 'compost');
+    const cleanupRef = doc(db, 'stats', 'cleanup');
+    const usersRef   = doc(db, 'stats', 'users');
 
-    listenToGlobalStats(data => {
-      if (!data) return;
-      document.getElementById('compost-total').textContent = data.totalCompostKg || 0;
-      document.getElementById('cleanup-total').textContent = data.totalCleanupMinutes || 0;
-      document.getElementById('users-total').textContent = data.totalUsers || 0;
-    });
+    onSnapshot(compostRef, snap =>
+      document.getElementById('total-compost').textContent = snap.data().total
+    );
+    onSnapshot(cleanupRef, snap =>
+      document.getElementById('total-cleanup').textContent = snap.data().total
+    );
+    onSnapshot(usersRef, snap =>
+      document.getElementById('user-count').textContent = snap.data().count
+    );
   </script>
+
+  <h1>Global Stats</h1>
+  <div id="global-stats">
+    <p>Total composted: <span id="total-compost">0</span> kg</p>
+    <p>Total cleanup: <span id="total-cleanup">0</span> mins</p>
+    <p>Total users: <span id="user-count">0</span></p>
+  </div>
+
 </body>
 </html>
