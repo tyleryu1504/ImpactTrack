@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body id="vanta-bg">
+  <header>
+    <input type="text" id="user-search" placeholder="Search users">
+    <div id="search-results"></div>
+    <div class="user-email" id="user-email"></div>
+  </header>
+  <main>
+    <h1>Your Activities</h1>
+    <form id="activity-form">
+      <select id="activity-type">
+        <option value="compost">Compost</option>
+        <option value="cleanup">Cleanup</option>
+      </select>
+      <input type="number" id="activity-amount" placeholder="Amount" required>
+      <select id="activity-unit">
+        <option value="kg">kg</option>
+        <option value="minutes">minutes</option>
+      </select>
+      <input type="text" id="activity-note" placeholder="Note (optional)">
+      <button type="submit">Log Activity</button>
+    </form>
+    <div id="activity-feed"></div>
+  </main>
+  <script type="module">
+    import { requireAuth, setupSearchBar } from './auth-common.js';
+    import { logActivity, getUserActivities, toggleLike } from './firestore/activities.js';
+    import { auth } from './firebase-init.js';
+
+    requireAuth();
+    setupSearchBar();
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('user-email').textContent = user.email;
+        getUserActivities(user.uid, renderActivities);
+      }
+    });
+
+    document.getElementById('activity-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const type = document.getElementById('activity-type').value;
+      const amount = document.getElementById('activity-amount').value;
+      const unit = document.getElementById('activity-unit').value;
+      const note = document.getElementById('activity-note').value;
+      try {
+        await logActivity(type, amount, unit, note);
+        document.getElementById('activity-form').reset();
+      } catch(err) { alert(err.message); }
+    });
+
+    function renderActivities(activities) {
+      const feed = document.getElementById('activity-feed');
+      feed.innerHTML = '';
+      activities.forEach(act => {
+        const div = document.createElement('div');
+        div.innerHTML = `<strong>${act.type}</strong> - ${act.amount} ${act.unit} ${act.note ? '- ' + act.note : ''}`;
+        const likeBtn = document.createElement('button');
+        const liked = act.likes && act.likes.includes(auth.currentUser.uid);
+        likeBtn.textContent = liked ? `Unlike (${act.likes.length})` : `Like (${act.likes.length})`;
+        likeBtn.onclick = () => toggleLike(act.id, auth.currentUser.uid, liked);
+        div.appendChild(likeBtn);
+        feed.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
