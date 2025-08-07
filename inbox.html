@@ -2,63 +2,65 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inbox</title>
+  <title>Inbox – ImpactTrack</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body id="vanta-bg">
-  <header>
-    <input type="text" id="user-search" placeholder="Search users">
-    <div id="search-results"></div>
-    <div class="user-email" id="user-email"></div>
-  </header>
-  <main>
-    <h1>Inbox</h1>
-    <div>
-      <input type="text" id="chat-id" placeholder="Chat ID">
-      <button id="load-chat">Load Chat</button>
-    </div>
-    <div id="messages"></div>
-    <div contenteditable id="message-input" style="background:#fff;color:#000;min-height:50px;margin-top:10px;"></div>
-    <button id="send-btn">Send</button>
-  </main>
+<body>
+
   <script type="module">
-    import { requireAuth, setupSearchBar } from './auth-common.js';
-    import { auth } from './firebase-init.js';
-    import { sendMessage, listenToMessages } from './firestore/chats.js';
+    import { requireAuth, setupNav } from './auth-common.js';
+    import { auth, db } from './firebase-init.js';
+    import {
+      collection,
+      addDoc,
+      query,
+      orderBy,
+      onSnapshot,
+      serverTimestamp
+    } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
     requireAuth();
-    setupSearchBar();
+    setupNav();
 
-    let unsubscribe = null;
-    auth.onAuthStateChanged(user => {
-      if (user) document.getElementById('user-email').textContent = user.email;
-    });
+    const chatsRef = collection(db, 'chats');
+    const q = query(chatsRef, orderBy('created', 'asc'));
+    const feed = document.getElementById('chat-feed');
 
-    document.getElementById('load-chat').addEventListener('click', () => {
-      const chatId = document.getElementById('chat-id').value;
-      if (unsubscribe) unsubscribe();
-      unsubscribe = listenToMessages(chatId, renderMessages);
-    });
-
-    document.getElementById('send-btn').addEventListener('click', async () => {
-      const chatId = document.getElementById('chat-id').value;
-      const content = document.getElementById('message-input').innerHTML;
-      try {
-        await sendMessage(chatId, content);
-        document.getElementById('message-input').innerHTML = '';
-      } catch(err) { alert(err.message); }
-    });
-
-    function renderMessages(msgs) {
-      const container = document.getElementById('messages');
-      container.innerHTML = '';
-      msgs.forEach(m => {
+    // Listen
+    onSnapshot(q, snap => {
+      feed.innerHTML = '';
+      snap.forEach(doc => {
+        const data = doc.data();
         const div = document.createElement('div');
-        div.innerHTML = m.formattedText;
-        container.appendChild(div);
+        div.textContent = `${data.username}: ${data.message}`;
+        feed.appendChild(div);
       });
-    }
+    });
+
+    // Send
+    document
+      .getElementById('chat-form')
+      .addEventListener('submit', async e => {
+        e.preventDefault();
+        const msg = document.getElementById('chat-input').value.trim();
+        if (!msg) return;
+        await addDoc(chatsRef, {
+          uid: auth.currentUser.uid,
+          username: auth.currentUser.email,
+          message: msg,
+          created: serverTimestamp()
+        });
+        document.getElementById('chat-input').value = '';
+      });
   </script>
+
+  <h1>Inbox</h1>
+  <div id="chat-feed"></div>
+
+  <form id="chat-form">
+    <input id="chat-input" type="text" placeholder="Type a message…" required>
+    <button type="submit">Send</button>
+  </form>
+
 </body>
 </html>
