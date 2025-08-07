@@ -2,50 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ImpactTrack - Login</title>
+  <title>ImpactTrack – Log In / Sign Up</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body id="vanta-bg">
-  <header>
-    <input type="text" id="user-search" placeholder="Search users">
-    <div id="search-results"></div>
-  </header>
-  <main class="auth-container">
-    <h1>ImpactTrack</h1>
-    <form id="login-form">
-      <input type="email" id="login-email" placeholder="Email" required>
-      <input type="password" id="login-password" placeholder="Password" required>
-      <button type="submit">Log In</button>
-    </form>
-    <form id="signup-form">
-      <input type="text" id="signup-username" placeholder="Username" required>
-      <input type="email" id="signup-email" placeholder="Email" required>
-      <input type="password" id="signup-password" placeholder="Password" required>
-      <button type="submit">Sign Up</button>
-    </form>
-    <button id="google-btn">Sign in with Google</button>
-  </main>
+<body>
+
+  <h1>ImpactTrack</h1>
+
+  <form id="login-form">
+    <h2>Log In</h2>
+    <input type="email"    id="login-email"    placeholder="Email"    required>
+    <input type="password" id="login-password" placeholder="Password" required>
+    <button type="submit">Log In</button>
+  </form>
+
+  <form id="signup-form">
+    <h2>Sign Up</h2>
+    <input type="text"     id="signup-username" placeholder="Username" required>
+    <input type="email"    id="signup-email"    placeholder="Email"    required>
+    <input type="password" id="signup-password" placeholder="Password" required>
+    <button type="submit">Sign Up</button>
+  </form>
+
+  <button id="google-sign-in">Sign in with Google</button>
+
   <script type="module">
-    import { logIn, signUp, signInWithGoogle, setupSearchBar, redirectIfLoggedIn } from './auth-common.js';
+    import {
+      redirectIfLoggedIn,
+      signUp,
+      logIn,
+      signInWithGoogle
+    } from './auth-common.js';
+
+    // Redirect out if already signed in
     redirectIfLoggedIn();
-    setupSearchBar();
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value;
-      const pass = document.getElementById('login-password').value;
-      try { await logIn(email, pass); } catch(err) { alert(err.message); }
-    });
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('signup-username').value;
-      const email = document.getElementById('signup-email').value;
-      const pass = document.getElementById('signup-password').value;
-      try { await signUp(username, email, pass); } catch(err) { alert(err.message); }
-    });
-    document.getElementById('google-btn').addEventListener('click', async () => {
-      try { await signInWithGoogle(); } catch(err) { alert(err.message); }
-    });
+
+    // Email/Password login
+    document
+      .getElementById('login-form')
+      .addEventListener('submit', async e => {
+        e.preventDefault();
+        try {
+          await logIn(
+            document.getElementById('login-email').value,
+            document.getElementById('login-password').value
+          );
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+    // Sign-up
+    document
+      .getElementById('signup-form')
+      .addEventListener('submit', async e => {
+        e.preventDefault();
+        try {
+          await signUp(
+            document.getElementById('signup-username').value,
+            document.getElementById('signup-email').value,
+            document.getElementById('signup-password').value
+          );
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+    // Google OAuth
+    document
+      .getElementById('google-sign-in')
+      .addEventListener('click', () => signInWithGoogle());
   </script>
 </body>
 </html>
