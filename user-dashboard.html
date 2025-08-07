@@ -2,74 +2,103 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Dashboard</title>
+  <title>My Dashboard – ImpactTrack</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body id="vanta-bg">
-  <header>
-    <input type="text" id="user-search" placeholder="Search users">
-    <div id="search-results"></div>
-    <div class="user-email" id="user-email"></div>
-  </header>
-  <main>
-    <h1>Your Activities</h1>
-    <form id="activity-form">
-      <select id="activity-type">
-        <option value="compost">Compost</option>
-        <option value="cleanup">Cleanup</option>
-      </select>
-      <input type="number" id="activity-amount" placeholder="Amount" required>
-      <select id="activity-unit">
-        <option value="kg">kg</option>
-        <option value="minutes">minutes</option>
-      </select>
-      <input type="text" id="activity-note" placeholder="Note (optional)">
-      <button type="submit">Log Activity</button>
-    </form>
-    <div id="activity-feed"></div>
-  </main>
+<body>
+
   <script type="module">
-    import { requireAuth, setupSearchBar } from './auth-common.js';
-    import { logActivity, getUserActivities, toggleLike } from './firestore/activities.js';
-    import { auth } from './firebase-init.js';
+    import {
+      requireAuth,
+      setupNav,
+      setupSearchBar
+    } from './auth-common.js';
 
+    import { auth, db } from './firebase-init.js';
+    import {
+      collection,
+      addDoc,
+      serverTimestamp,
+      query,
+      orderBy,
+      onSnapshot
+    } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+
+    // Protect & render nav
     requireAuth();
-    setupSearchBar();
+    setupNav();
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        document.getElementById('user-email').textContent = user.email;
-        getUserActivities(user.uid, renderActivities);
-      }
-    });
+    // References
+    const user = auth.currentUser;
+    const logsRef = collection(db, 'users', user.uid, 'logs');
 
-    document.getElementById('activity-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const type = document.getElementById('activity-type').value;
-      const amount = document.getElementById('activity-amount').value;
-      const unit = document.getElementById('activity-unit').value;
-      const note = document.getElementById('activity-note').value;
-      try {
-        await logActivity(type, amount, unit, note);
-        document.getElementById('activity-form').reset();
-      } catch(err) { alert(err.message); }
-    });
+    // Log form submit
+    document
+      .getElementById('log-form')
+      .addEventListener('submit', async e => {
+        e.preventDefault();
+        const type   = document.getElementById('activity-type').value;
+        const amount = Number(document.getElementById('activity-amount').value);
+        await addDoc(logsRef, { type, amount, created: serverTimestamp() });
+        document.getElementById('activity-amount').value = '';
+      });
 
-    function renderActivities(activities) {
+    // Display feed & stats
+    const q = query(logsRef, orderBy('created', 'desc'));
+    onSnapshot(q, snap => {
       const feed = document.getElementById('activity-feed');
       feed.innerHTML = '';
-      activities.forEach(act => {
-        const div = document.createElement('div');
-        div.innerHTML = `<strong>${act.type}</strong> - ${act.amount} ${act.unit} ${act.note ? '- ' + act.note : ''}`;
-        const likeBtn = document.createElement('button');
-        const liked = act.likes && act.likes.includes(auth.currentUser.uid);
-        likeBtn.textContent = liked ? `Unlike (${act.likes.length})` : `Like (${act.likes.length})`;
-        likeBtn.onclick = () => toggleLike(act.id, auth.currentUser.uid, liked);
-        div.appendChild(likeBtn);
-        feed.appendChild(div);
+      let compost = 0, cleanup = 0;
+      snap.forEach(doc => {
+        const data = doc.data();
+        const item = document.createElement('div');
+        if (data.type === 'compost') {
+          compost += data.amount;
+          item.textContent = `${data.amount} kg composted – ${data.created.toDate().toLocaleString()}`;
+        } else {
+          cleanup += data.amount;
+          item.textContent = `${data.amount} mins cleanup – ${data.created.toDate().toLocaleString()}`;
+        }
+        feed.appendChild(item);
       });
-    }
+      // Update stats
+      document.getElementById('total-compost').textContent = compost;
+      document.getElementById('total-cleanup').textContent = cleanup;
+    });
+
+    // Initialize search here
+    setupSearchBar();
   </script>
+
+  <h1>Your Activities</h1>
+
+  <div id="user-stats">
+    <p>Total composted: <span id="total-compost">0</span> kg</p>
+    <p>Total cleanup: <span id="total-cleanup">0</span> minutes</p>
+  </div>
+
+  <form id="log-form">
+    <select id="activity-type">
+      <option value="compost">Compost</option>
+      <option value="cleanup">Cleanup</option>
+    </select>
+    <input
+      type="number"
+      id="activity-amount"
+      placeholder="Amount (kg or minutes)"
+      required
+    >
+    <button type="submit">Log Activity</button>
+  </form>
+
+  <div id="activity-feed"></div>
+
+  <!-- SEARCH USERS (moved here, removed from all other pages) -->
+  <section id="user-search-section">
+    <h2>Search Users</h2>
+    <input id="user-search" type="text" placeholder="Search users…">
+    <div id="search-results"></div>
+  </section>
+
 </body>
 </html>
