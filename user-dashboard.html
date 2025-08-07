@@ -14,15 +14,11 @@
       setupSearchBar
     } from './auth-common.js';
 
-    import { auth, db } from './firebase-init.js';
+    import { auth } from './firebase-init.js';
     import {
-      collection,
-      addDoc,
-      serverTimestamp,
-      query,
-      orderBy,
-      onSnapshot
-    } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+      logActivity,
+      getUserActivities
+    } from './firestore/activities.js';
 
     // Protect & render nav
     requireAuth();
@@ -30,7 +26,6 @@
 
     // References
     const user = auth.currentUser;
-    const logsRef = collection(db, 'users', user.uid, 'logs');
 
     // Log form submit
     document
@@ -39,25 +34,26 @@
         e.preventDefault();
         const type   = document.getElementById('activity-type').value;
         const amount = Number(document.getElementById('activity-amount').value);
-        await addDoc(logsRef, { type, amount, created: serverTimestamp() });
+        const note   = document.getElementById('activity-desc').value.trim();
+        const unit   = type === 'compost' ? 'kg' : 'minutes';
+        await logActivity(type, amount, unit, note);
         document.getElementById('activity-amount').value = '';
+        document.getElementById('activity-desc').value = '';
       });
 
     // Display feed & stats
-    const q = query(logsRef, orderBy('created', 'desc'));
-    onSnapshot(q, snap => {
+    getUserActivities(user.uid, activities => {
       const feed = document.getElementById('activity-feed');
       feed.innerHTML = '';
       let compost = 0, cleanup = 0;
-      snap.forEach(doc => {
-        const data = doc.data();
+      activities.forEach(data => {
         const item = document.createElement('div');
+        const date = data.createdAt?.toDate().toLocaleString();
+        item.textContent = `${data.amount} ${data.unit} ${data.type} – ${data.note} – ${date}`;
         if (data.type === 'compost') {
           compost += data.amount;
-          item.textContent = `${data.amount} kg composted – ${data.created.toDate().toLocaleString()}`;
-        } else {
+        } else if (data.type === 'cleanup') {
           cleanup += data.amount;
-          item.textContent = `${data.amount} mins cleanup – ${data.created.toDate().toLocaleString()}`;
         }
         feed.appendChild(item);
       });
@@ -87,6 +83,11 @@
       id="activity-amount"
       placeholder="Amount (kg or minutes)"
       required
+    >
+    <input
+      type="text"
+      id="activity-desc"
+      placeholder="Description"
     >
     <button type="submit">Log Activity</button>
   </form>
