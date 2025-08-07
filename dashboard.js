@@ -21,7 +21,14 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-logoutButton.addEventListener('click', () => signOut(auth));
+// FIX 3: Add proper logout functionality with redirect
+logoutButton.addEventListener('click', () => {
+  signOut(auth).then(() => {
+    window.location.href = 'login.html';
+  }).catch((error) => {
+    console.error('Logout error:', error);
+  });
+});
 
 function loadUserStats() {
   const q = query(collection(db, 'users', currentUser.uid, 'logs'));
@@ -39,7 +46,14 @@ function loadUserStats() {
         stats.cleanupMinutes += minutes;
       }
     });
-    userStatsDiv.textContent = `Compost: ${stats.compostKg} kg, ${stats.compostMinutes} min | Cleanup: ${stats.cleanupKg} kg, ${stats.cleanupMinutes} min`;
+    userStatsDiv.innerHTML = `
+      <h3>Your Stats</h3>
+      <p>Compost: ${stats.compostKg} kg, ${stats.compostMinutes} min</p>
+      <p>Cleanup: ${stats.cleanupKg} kg, ${stats.cleanupMinutes} min</p>
+    `;
+  }, (error) => {
+    console.error('Error loading user stats:', error);
+    userStatsDiv.innerHTML = '<p>Error loading your stats</p>';
   });
 }
 
@@ -59,6 +73,13 @@ function loadGlobalStats() {
         stats.cleanupMinutes += minutes;
       }
     });
-    globalStatsDiv.textContent = `Compost: ${stats.compostKg} kg, ${stats.compostMinutes} min | Cleanup: ${stats.cleanupKg} kg, ${stats.cleanupMinutes} min`;
+    globalStatsDiv.innerHTML = `
+      <h3>Global Stats</h3>
+      <p>Total Compost: ${stats.compostKg} kg, ${stats.compostMinutes} min</p>
+      <p>Total Cleanup: ${stats.cleanupKg} kg, ${stats.cleanupMinutes} min</p>
+    `;
+  }, (error) => {
+    console.error('Error loading global stats:', error);
+    globalStatsDiv.innerHTML = '<p>Error loading global stats</p>';
   });
 }
