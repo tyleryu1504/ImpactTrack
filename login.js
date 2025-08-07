@@ -1,5 +1,6 @@
-import { auth } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
+import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
 const emailLoginForm = document.getElementById('email-login');
 const registerButton = document.getElementById('register');
@@ -35,8 +36,10 @@ googleButton.addEventListener('click', async () => {
   }
 });
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
+    // Ensure a user document exists for storing activity logs
+    await setDoc(doc(db, 'users', user.uid), { email: user.email }, { merge: true });
     window.location.href = 'index.html';
   }
 });

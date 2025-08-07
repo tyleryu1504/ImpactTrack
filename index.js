@@ -1,6 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js';
-import { collection, addDoc, query, orderBy, limit, onSnapshot, Timestamp } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+import { collection, addDoc, query, orderBy, limit, onSnapshot, Timestamp, doc, setDoc } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
 
 const activityForm = document.getElementById('activity-form');
 const activityFeed = document.getElementById('activity-feed');
@@ -52,6 +52,8 @@ activityForm.addEventListener('submit', async (e) => {
   console.log('Collection path:', `users/${currentUser.uid}/logs`);
 
   try {
+    // Ensure the parent user document exists so writes to the logs subcollection succeed
+    await setDoc(doc(db, 'users', currentUser.uid), { email: currentUser.email }, { merge: true });
     const docRef = await addDoc(collection(db, 'users', currentUser.uid, 'logs'), data);
     console.log('Document written with ID: ', docRef.id);
     alert('Activity logged successfully!');
