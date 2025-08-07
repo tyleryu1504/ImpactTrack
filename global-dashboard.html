@@ -9,26 +9,30 @@
 
   <script type="module">
     import { requireAuth, setupNav } from './auth-common.js';
-    import { db } from './firebase-init.js';
-    import { doc, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+    import { listenToGlobalStats } from './firestore/stats.js';
+    import { getAllActivities } from './firestore/activities.js';
 
     requireAuth();
     setupNav();
 
-    // Listen to your global stats docs
-    const compostRef = doc(db, 'stats', 'compost');
-    const cleanupRef = doc(db, 'stats', 'cleanup');
-    const usersRef   = doc(db, 'stats', 'users');
+    // Global stats
+    listenToGlobalStats(stats => {
+      document.getElementById('total-compost').textContent = stats.totalCompostKg;
+      document.getElementById('total-cleanup').textContent = stats.totalCleanupMinutes;
+      document.getElementById('user-count').textContent   = stats.totalUsers;
+    });
 
-    onSnapshot(compostRef, snap =>
-      document.getElementById('total-compost').textContent = snap.data().total
-    );
-    onSnapshot(cleanupRef, snap =>
-      document.getElementById('total-cleanup').textContent = snap.data().total
-    );
-    onSnapshot(usersRef, snap =>
-      document.getElementById('user-count').textContent = snap.data().count
-    );
+    // Global activity feed
+    getAllActivities(activities => {
+      const feed = document.getElementById('activity-feed');
+      feed.innerHTML = '';
+      activities.forEach(data => {
+        const item = document.createElement('div');
+        const date = data.createdAt?.toDate().toLocaleString();
+        item.textContent = `${data.username}: ${data.amount} ${data.unit} ${data.type} – ${data.note} – ${date}`;
+        feed.appendChild(item);
+      });
+    });
   </script>
 
   <h1>Global Stats</h1>
@@ -37,6 +41,9 @@
     <p>Total cleanup: <span id="total-cleanup">0</span> mins</p>
     <p>Total users: <span id="user-count">0</span></p>
   </div>
+
+  <h2>Recent Activities</h2>
+  <div id="activity-feed"></div>
 
 </body>
 </html>

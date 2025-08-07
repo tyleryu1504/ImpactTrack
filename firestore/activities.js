@@ -47,6 +47,15 @@ export function getUserActivities(userId, callback) {
   });
 }
 
+export function getAllActivities(callback) {
+  const q = query(collection(db, 'activities'), orderBy('createdAt', 'desc'));
+  return onSnapshot(q, snap => {
+    const arr = [];
+    snap.forEach(doc => arr.push({ id: doc.id, ...doc.data() }));
+    callback(arr);
+  });
+}
+
 export async function toggleLike(activityId, userId, hasLiked) {
   const ref = doc(db, 'activities', activityId);
   await updateDoc(ref, {

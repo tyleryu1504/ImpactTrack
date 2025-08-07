@@ -18,6 +18,8 @@
       onSnapshot,
       serverTimestamp
     } from 'https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js';
+    import { listenToGlobalStats } from './firestore/stats.js';
+    import { getAllActivities } from './firestore/activities.js';
 
     requireAuth();
     setupNav();
@@ -52,6 +54,24 @@
         });
         document.getElementById('chat-input').value = '';
       });
+
+    // Dashboard section
+    listenToGlobalStats(stats => {
+      document.getElementById('total-compost').textContent = stats.totalCompostKg;
+      document.getElementById('total-cleanup').textContent = stats.totalCleanupMinutes;
+      document.getElementById('user-count').textContent   = stats.totalUsers;
+    });
+
+    getAllActivities(activities => {
+      const feed = document.getElementById('activity-feed');
+      feed.innerHTML = '';
+      activities.forEach(data => {
+        const item = document.createElement('div');
+        const date = data.createdAt?.toDate().toLocaleString();
+        item.textContent = `${data.username}: ${data.amount} ${data.unit} ${data.type} – ${data.note} – ${date}`;
+        feed.appendChild(item);
+      });
+    });
   </script>
 
   <h1>Inbox</h1>
@@ -61,6 +81,17 @@
     <input id="chat-input" type="text" placeholder="Type a message…" required>
     <button type="submit">Send</button>
   </form>
+
+  <section id="dashboard-section">
+    <h2>Dashboard</h2>
+    <div id="global-stats">
+      <p>Total composted: <span id="total-compost">0</span> kg</p>
+      <p>Total cleanup: <span id="total-cleanup">0</span> mins</p>
+      <p>Total users: <span id="user-count">0</span></p>
+    </div>
+    <h3>Recent Activities</h3>
+    <div id="activity-feed"></div>
+  </section>
 
 </body>
 </html>
