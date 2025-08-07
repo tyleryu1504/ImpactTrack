@@ -46,15 +46,23 @@ activityForm.addEventListener('submit', async (e) => {
   }
 });
 
+// FIX 1: Add the missing logout functionality
 logoutButton.addEventListener('click', () => {
-  signOut(auth);
+  signOut(auth).then(() => {
+    window.location.href = 'login.html';
+  }).catch((error) => {
+    console.error('Logout error:', error);
+  });
 });
 
+// FIX 2: Fix the loadFeed function - there was a missing closing parenthesis and limit
 function loadFeed() {
   const q = query(
     collection(db, 'users', currentUser.uid, 'logs'),
     orderBy('createdAt', 'desc'),
-
+    limit(50) // Added limit and fixed the missing closing parenthesis
+  );
+  
   onSnapshot(q, (snapshot) => {
     activityFeed.innerHTML = '';
     snapshot.forEach((doc) => {
@@ -67,17 +75,17 @@ function loadFeed() {
   });
 }
 
-  unitRadios.forEach((radio) => {
-    radio.addEventListener('change', (e) => {
-      if (!e.target.checked) return;
-      if (e.target.value === 'minutes') {
-        minutesInput.parentElement.style.display = '';
-        kgInput.parentElement.style.display = 'none';
-        kgInput.value = '';
-      } else {
-        kgInput.parentElement.style.display = '';
-        minutesInput.parentElement.style.display = 'none';
-        minutesInput.value = '';
-      }
-    });
+unitRadios.forEach((radio) => {
+  radio.addEventListener('change', (e) => {
+    if (!e.target.checked) return;
+    if (e.target.value === 'minutes') {
+      minutesInput.parentElement.style.display = '';
+      kgInput.parentElement.style.display = 'none';
+      kgInput.value = '';
+    } else {
+      kgInput.parentElement.style.display = '';
+      minutesInput.parentElement.style.display = 'none';
+      minutesInput.value = '';
+    }
   });
+});
